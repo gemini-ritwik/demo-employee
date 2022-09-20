@@ -41,4 +41,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         return handleExceptionInternal(ex, errorResponse, headers, status, request);
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleGeneralException(Exception ex, WebRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), ex.getMessage(), null);
+        return handleExceptionInternal(ex, errorResponse, null, HttpStatus.NOT_FOUND, request);
+    }
 }
