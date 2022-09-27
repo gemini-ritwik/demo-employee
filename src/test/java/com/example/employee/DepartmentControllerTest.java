@@ -1,6 +1,9 @@
 package com.example.employee;
 
 import com.example.employee.controller.DepartmentController;
+import com.example.employee.exception.DepartmentNotFoundException;
+import com.example.employee.exception.GlobalExceptionHandler;
+import com.example.employee.exception.NoDataFoundException;
 import com.example.employee.models.Department;
 import com.example.employee.services.DepartmentServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,7 +49,10 @@ public class DepartmentControllerTest {
 
     @BeforeEach
     public void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(departmentController).build();
+
+        mockMvc = MockMvcBuilders.standaloneSetup(departmentController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
     }
 
     @Test
@@ -62,6 +68,18 @@ public class DepartmentControllerTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
+    }
+    @Test
+    public void testGetDepartmentsStatusNotFound() throws Exception{
+        when(departmentService.getDepartments())
+                .thenThrow(new NoDataFoundException("There is no data in the department table"));
+
+
+        this.mockMvc.perform(get("/departments"))
+                .andExpect(status().isNotFound())
+                .andExpect(MockMvcResultMatchers.jsonPath(".message")
+                        .value("There is no data in the department table"))
+                .andDo(print());
     }
 
     @Test
@@ -79,6 +97,20 @@ public class DepartmentControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath(".createdBy").value(1))
                 .andDo(print());
     }
+    @Test
+    public void testGetDepartmentStatusNotFound() throws Exception {
+        long deptId = 1;
+
+        when(departmentService.getDepartment(deptId))
+                .thenThrow(new DepartmentNotFoundException("Department not found with id : "+deptId));
+
+
+        this.mockMvc.perform(get("/departments/{deptId}", deptId))
+                .andExpect(status().isNotFound())
+                .andExpect(MockMvcResultMatchers.jsonPath(".message")
+                        .value("Department not found with id : 1"))
+                .andDo(print());
+    }
 
     @Test
     public void testCreateDepartment() throws Exception {
@@ -91,6 +123,21 @@ public class DepartmentControllerTest {
                         .content(jsonBody)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
+                .andDo(print());
+    }
+    @Test
+    public void testCreateDepartmentBadRequest() throws Exception {
+        department = new Department("", "Description 1", 1);
+
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonBody = mapper.writeValueAsString(department);
+
+        this.mockMvc.perform(post("/departments")
+                        .content(jsonBody)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath(".fieldErrors.deptName")
+                        .value("Department name cannot be empty."))
                 .andDo(print());
     }
 
@@ -110,6 +157,22 @@ public class DepartmentControllerTest {
                 .andExpect(status().isOk())
                 .andDo(print());
     }
+    @Test
+    public void testUpdateDepartmentBadRequest() throws Exception {
+        long deptId = 1;
+        department = new Department(deptId, "", "Description 1", 1, 1, true, false, null);
+
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonBody = mapper.writeValueAsString(department);
+
+        this.mockMvc.perform(put("/departments/{deptId}", deptId)
+                        .content(jsonBody)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath(".fieldErrors.deptName")
+                        .value("Department name cannot be empty."))
+                .andDo(print());
+    }
 
     @Test
     public void testDeleteDepartment() throws Exception {
@@ -126,4 +189,18 @@ public class DepartmentControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath(".createdBy").value(1))
                 .andDo(print());
     }
+    @Test
+    public void testDeleteDepartmentNotFound() throws Exception {
+        long deptId = 1;
+
+        when(departmentService.deleteDepartment(deptId))
+                .thenThrow(new DepartmentNotFoundException("Department not found with id : "+deptId));
+
+        this.mockMvc.perform(delete("/departments/{deptId}", deptId))
+                .andExpect(status().isNotFound())
+                .andExpect(MockMvcResultMatchers.jsonPath(".message")
+                        .value("Department not found with id : 1"))
+                .andDo(print());
+    }
+
 }

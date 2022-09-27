@@ -1,9 +1,7 @@
 package com.example.employee.controller;
 
 import com.example.employee.models.Department;
-import com.example.employee.models.Employee;
 import com.example.employee.services.DepartmentService;
-import com.example.employee.services.EmployeeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
