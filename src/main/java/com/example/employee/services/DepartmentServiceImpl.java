@@ -19,6 +19,11 @@ public class DepartmentServiceImpl implements DepartmentService{
     @Autowired
     private DepartmentRepository departmentRepository;
 
+    /**
+     * Fetches all the departments from the database.
+     * @return List<Department> This returns all the departments
+     * @throws Exception Throws exception when there are no departments in the database
+     */
     @Override
     public List<Department> getDepartments() throws Exception{
         LOGGER.trace("Entering method getDepartment...");
@@ -26,7 +31,7 @@ public class DepartmentServiceImpl implements DepartmentService{
 
         departmentRepository.findAll().forEach(department -> {
             //Check if record is active
-            if(department.isActive())
+            if(department.isActive() && !department.isDeleted())
                 departments.add(department);
         });
 
@@ -40,6 +45,12 @@ public class DepartmentServiceImpl implements DepartmentService{
         return departments;
     }
 
+    /**
+     * Fetches the department with a specific department id
+     * @param deptId Department id of the department to be fetched
+     * @return Department Returns the department with deptId
+     * @throws Exception Throws exception when the department with given id does not exist
+     */
     @Override
     public Department getDepartment(Long deptId) throws Exception{
         LOGGER.trace("Entering the method getDepartment");
@@ -54,7 +65,7 @@ public class DepartmentServiceImpl implements DepartmentService{
         );
 
         //Check if the record is active and not deleted
-        if(!departmentFromDb.isActive()) {
+        if(!departmentFromDb.isActive() && departmentFromDb.isDeleted()) {
             LOGGER.error("Department not found with id : "+deptId);
             throw new DepartmentNotFoundException("Department not found with deptId : "+deptId);
         }
@@ -63,6 +74,13 @@ public class DepartmentServiceImpl implements DepartmentService{
         return departmentFromDb;
     }
 
+    /**
+     * Updates the details of department with the given department id
+     * @param deptId Department id of the department to be updated
+     * @param department Department details with which existing department is to be replaced
+     * @return  Department Returns the updated department
+     * @throws Exception Throws exception when the department to be updated does not exist
+     */
     @Override
     public Department updateDepartment(Long deptId, Department department) throws Exception{
         LOGGER.trace("Entering method updateDepartment");
@@ -76,12 +94,12 @@ public class DepartmentServiceImpl implements DepartmentService{
         );
 
         //Check if the record is active and not deleted
-        if(!departmentFromDb.isActive()) {
+        if(!departmentFromDb.isActive() && departmentFromDb.isDeleted()) {
             LOGGER.error("Department not found with id : " + deptId);
             throw new DepartmentNotFoundException("Department not found with deptId : " + deptId);
         }
 
-        LOGGER.debug("Updating the details of the department with id : "+deptId+" from : "+departmentFromDb.toString() +" to : "+department.toString());
+        LOGGER.debug("Updating the details of the department with id : "+deptId+" from : "+departmentFromDb +" to : "+department.toString());
 
         //Updating details
         departmentFromDb.setDeptName(department.getDeptName());
@@ -95,6 +113,10 @@ public class DepartmentServiceImpl implements DepartmentService{
         return departmentFromDb;
     }
 
+    /**
+     * Saves a department to the database
+     * @param department Department to be saved in database
+     */
     @Override
     public void createDepartment(Department department) {
         LOGGER.trace("Entering the method createDepartment.");
@@ -104,6 +126,12 @@ public class DepartmentServiceImpl implements DepartmentService{
         LOGGER.info("Department created successfully");
     }
 
+    /**
+     * Delete the department with the given department id
+     * @param deptId Department id of the department to be deleted
+     * @return Department Returns the department that has been deleted
+     * @throws Exception Throws exception when the department to be deleted does not exist
+     */
     @Override
     public Department deleteDepartment(Long deptId) throws Exception{
         LOGGER.trace("Entering the method deleteDepartment.");

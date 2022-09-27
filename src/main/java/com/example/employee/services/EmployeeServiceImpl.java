@@ -25,6 +25,11 @@ public class EmployeeServiceImpl implements EmployeeService{
     @Autowired
     private DepartmentRepository departmentRepository;
 
+    /**
+     * Fetches all the employees from the database
+     * @return List<Employee> Returns a list of all the employees
+     * @throws Exception Throws exception when there are no employees
+     */
     @Override
     public List<Employee> getEmployees() throws Exception{
         LOGGER.trace("Entering the method getEmployees.");
@@ -33,7 +38,7 @@ public class EmployeeServiceImpl implements EmployeeService{
 
         employeeRepository.findAll().forEach(employee -> {
             //Check if record is active
-            if(employee.isActive())
+            if(employee.isActive() && !employee.isDeleted())
                 employees.add(employee);
         });
 
@@ -47,6 +52,12 @@ public class EmployeeServiceImpl implements EmployeeService{
         return employees;
     }
 
+    /**
+     * Fetches the employee with the given employee id from the database
+     * @param employeeId Employee id of the employee to be fetched
+     * @return Employee Returns the employee with the given employee id
+     * @throws Exception Throws an exception when the employee with the given id does not exist
+     */
     @Override
     public Employee getEmployee(Long employeeId) throws Exception{
         LOGGER.trace("Entering the method getEmployee");
@@ -60,7 +71,7 @@ public class EmployeeServiceImpl implements EmployeeService{
         );
 
         //Check if the record is active and not deleted
-        if(!employeeFromDb.isActive()) {
+        if(!employeeFromDb.isActive() && employeeFromDb.isDeleted()) {
             LOGGER.error("Employee not found with id : "+employeeId);
             throw new EmployeeNotFoundException("Employee not found with id : " + employeeId);
         }
@@ -69,6 +80,14 @@ public class EmployeeServiceImpl implements EmployeeService{
         return employeeFromDb;
     }
 
+    /**
+     * Update the details of the employee with given id
+     * @param deptId id of the department to which the employee belongs
+     * @param employeeId Employee id of the employee to be updated
+     * @param employee employee details of to be updated
+     * @return Employee Returns the updated employee
+     * @throws Exception Throws an exception when the employee or department with given ids don't exist
+     */
     @Override
     public Employee updateEmployee(Long deptId, Long employeeId, Employee employee) throws Exception{
         LOGGER.trace("Entering the method updateEmployees");
@@ -88,11 +107,11 @@ public class EmployeeServiceImpl implements EmployeeService{
         );
 
         //Check if the record is active and not deleted
-        if(!employeeFromDb.isActive()) {
+        if(!employeeFromDb.isActive() && employeeFromDb.isDeleted()) {
             LOGGER.error("Employee not found with id : "+employeeId);
             throw new EmployeeNotFoundException("Employee not found with id : " + employeeId);
         }
-        if(!departmentFromDb.isActive()) {
+        if(!departmentFromDb.isActive() && departmentFromDb.isDeleted()) {
             LOGGER.error("Department not found with id : "+deptId);
             throw new DepartmentNotFoundException("Department not found with deptId : " + deptId);
         }
@@ -113,6 +132,12 @@ public class EmployeeServiceImpl implements EmployeeService{
         return employeeFromDb;
     }
 
+    /**
+     * Save the employee to the database belonging to the specific department
+     * @param deptId id of the department to which the employee belongs
+     * @param employee employee to be saved
+     * @throws Exception thr/ows an exception when the department with the given id does not exist
+     */
     @Override
     public void createEmployee(Long deptId, Employee employee) throws Exception{
         LOGGER.trace("Entering the method createEmployee");
@@ -131,6 +156,12 @@ public class EmployeeServiceImpl implements EmployeeService{
         LOGGER.info("Employee created successfully");
     }
 
+    /**
+     * Deletes the employee with the given employee id
+     * @param employeeId id of the employee to be deleted
+     * @return Employee returns the employee that has been deleted
+     * @throws Exception throws exception when the employee to be deleted does not exist in the database
+     */
     @Override
     public Employee deleteEmployee(Long employeeId) throws Exception{
         LOGGER.trace("Entering the method deleteEmployee");

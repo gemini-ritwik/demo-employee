@@ -24,7 +24,7 @@ import java.util.List;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ComponentScan(basePackages = "com.example.employee")
 @AutoConfigureMockMvc
@@ -52,9 +52,9 @@ public class DepartmentControllerTest {
     @Test
     public void testGetDepartments() throws Exception {
         departments = new ArrayList<>();
-        departments.add(new Department(1L,"HR", "Description 1",1, 1, true, false, null));
-        departments.add(new Department(2L, "DevOps", "Description 2",2,2,true, false, null));
-        departments.add(new Department(3L, "Design", "Description 3",1, 1, true, false, null));
+        departments.add(new Department(1L, "HR", "Description 1", 1, 1, true, false, null));
+        departments.add(new Department(2L, "DevOps", "Description 2", 2, 2, true, false, null));
+        departments.add(new Department(3L, "Design", "Description 3", 1, 1, true, false, null));
 
         when(departmentService.getDepartments()).thenReturn(departments);
 
@@ -88,8 +88,8 @@ public class DepartmentControllerTest {
         String jsonBody = mapper.writeValueAsString(department);
 
         this.mockMvc.perform(post("/departments")
-                .content(jsonBody)
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(jsonBody)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andDo(print());
     }
