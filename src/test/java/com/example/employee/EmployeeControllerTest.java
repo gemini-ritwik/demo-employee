@@ -1,11 +1,13 @@
 package com.example.employee;
 
 import com.example.employee.controller.EmployeeController;
+import com.example.employee.exception.EmployeeNotFoundException;
+import com.example.employee.exception.GlobalExceptionHandler;
+import com.example.employee.exception.NoDataFoundException;
 import com.example.employee.models.Address;
 import com.example.employee.models.Department;
 import com.example.employee.models.Employee;
 import com.example.employee.services.EmployeeServiceImpl;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,7 +52,10 @@ public class EmployeeControllerTest {
 
     @BeforeEach
     public void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(employeeController).build();
+
+        mockMvc = MockMvcBuilders.standaloneSetup(employeeController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
     }
 
     @Test
@@ -87,6 +92,18 @@ public class EmployeeControllerTest {
                 .andExpect(status().isOk())
                 .andDo(print());
     }
+    @Test
+    public void testGetEmployeesNotFound() throws Exception {
+        when(employeeService.getEmployees())
+                .thenThrow(new NoDataFoundException("There is no data in the employee table"));
+
+
+        this.mockMvc.perform(get("/employees"))
+                .andExpect(status().isNotFound())
+                .andExpect(MockMvcResultMatchers.jsonPath(".message")
+                        .value("There is no data in the employee table"))
+                .andDo(print());
+    }
 
     @Test
     public void testGetEmployee() throws Exception{
@@ -108,6 +125,19 @@ public class EmployeeControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath(".employeeName").value("Name 1"))
                 .andExpect(MockMvcResultMatchers.jsonPath(".employeeDesignation").value("Designation 1"))
                 .andExpect(MockMvcResultMatchers.jsonPath(".phoneNumber").value("1234567890"))
+                .andDo(print());
+    }
+    @Test
+    public void testGetEmployeeNotFound() throws Exception {
+        long employeeId = 1;
+        when(employeeService.getEmployee(employeeId))
+                .thenThrow(new EmployeeNotFoundException("Employee not found with id : "+employeeId));
+
+
+        this.mockMvc.perform(get("/employees/{employeeId}", employeeId))
+                .andExpect(status().isNotFound())
+                .andExpect(MockMvcResultMatchers.jsonPath(".message")
+                        .value("Employee not found with id : 1"))
                 .andDo(print());
     }
 
@@ -132,6 +162,39 @@ public class EmployeeControllerTest {
                         .content(jsonBody)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
+                .andDo(print());
+    }
+    @Test
+    public void testCreateEmployeeBadRequest() throws Exception {
+        long deptId = 1;
+        department = new Department(deptId, "HR",
+                "Description 1",
+                1,
+                1,
+                true,
+                false,
+                null);
+        long employeeId = 1;
+        Employee employee = new Employee(1L,
+                "",
+                new Address("Address 1","City 1", "State 1", "pin1"),
+                "Designation 1",
+                "",
+                true,
+                false,
+                department);
+
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonBody = mapper.writeValueAsString(employee);
+
+        this.mockMvc.perform(post("/departments/{deptId}/employees", deptId)
+                        .content(jsonBody)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath(".fieldErrors.employeeName")
+                        .value("Employee name should not be empty."))
+                .andExpect(MockMvcResultMatchers.jsonPath(".fieldErrors.phoneNumber")
+                        .value("Number should contain 10 digits."))
                 .andDo(print());
     }
 
@@ -160,6 +223,34 @@ public class EmployeeControllerTest {
                 .andExpect(status().isOk())
                 .andDo(print());
     }
+    @Test
+    public void testUpdateEmployeeBadRequest() throws Exception {
+        long deptId = 1;
+        department = new Department(deptId, "HR", "Description 1", 1, 1, true, false, null);
+        long employeeId = 1;
+        Employee employee = new Employee(1L,
+                "",
+                new Address("Address 1","City 1", "State 1", "pin1"),
+                "Designation 1",
+                "hello",
+                true,
+                false,
+                department);
+
+
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonBody = mapper.writeValueAsString(employee);
+
+        this.mockMvc.perform(put("/departments/{deptId}/employees/{employeeId}", deptId, employeeId)
+                        .content(jsonBody)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath(".fieldErrors.employeeName")
+                        .value("Employee name should not be empty."))
+                .andExpect(MockMvcResultMatchers.jsonPath(".fieldErrors.phoneNumber")
+                        .value("Number should contain 10 digits."))
+                .andDo(print());
+    }
 
     @Test
     public void testDeleteEmployee() throws Exception {
@@ -186,6 +277,19 @@ public class EmployeeControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath(".employeeName").value("Name 1"))
                 .andExpect(MockMvcResultMatchers.jsonPath(".employeeDesignation").value("Designation 1"))
                 .andExpect(MockMvcResultMatchers.jsonPath(".phoneNumber").value("1234567890"))
+                .andDo(print());
+    }
+    @Test
+    public void testDeleteEmployeeNotFound() throws Exception {
+        long employeeId = 1;
+
+        when(employeeService.deleteEmployee(employeeId))
+                .thenThrow(new EmployeeNotFoundException("Employee not found with id : "+employeeId));
+
+        this.mockMvc.perform(delete("/employees/{employeeId}", employeeId))
+                .andExpect(status().isNotFound())
+                .andExpect(MockMvcResultMatchers.jsonPath(".message")
+                        .value("Employee not found with id : 1"))
                 .andDo(print());
     }
 }
