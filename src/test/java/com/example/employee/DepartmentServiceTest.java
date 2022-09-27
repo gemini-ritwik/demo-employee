@@ -1,5 +1,7 @@
 package com.example.employee;
 
+import com.example.employee.exception.DepartmentNotFoundException;
+import com.example.employee.exception.NoDataFoundException;
 import com.example.employee.models.Department;
 import com.example.employee.repository.DepartmentRepository;
 import com.example.employee.services.DepartmentServiceImpl;
@@ -12,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -29,7 +32,7 @@ public class DepartmentServiceTest {
     @Test
     public void testGetDepartments() throws Exception {
 
-        List<Department> myDepartments = new ArrayList<>();
+        myDepartments = new ArrayList<>();
         myDepartments.add(new Department("HR", "Description 1",1));
         myDepartments.add(new Department("DevOps", "Description 2",2));
         myDepartments.add(new Department("Design", "Description 3",1));
@@ -37,6 +40,16 @@ public class DepartmentServiceTest {
         when(departmentRepository.findAll()).thenReturn(myDepartments);
 
         assertEquals(3, departmentService.getDepartments().size());
+    }
+    @Test
+    public void testGetDepartmentThrowsNoDataFoundException() throws Exception {
+
+        myDepartments = new ArrayList<>();
+
+        when(departmentRepository.findAll()).thenReturn(myDepartments);
+
+        assertThatThrownBy(() -> departmentService.getDepartments())
+                .isInstanceOf(NoDataFoundException.class);
     }
 
     @Test
@@ -51,6 +64,16 @@ public class DepartmentServiceTest {
         assertEquals(myDepartment.getDeptName(), departmentService.getDepartment(id).getDeptName());
         assertEquals(myDepartment.getDeptDescription(), departmentService.getDepartment(id).getDeptDescription());
         assertEquals(myDepartment.getCreatedBy(), departmentService.getDepartment(id).getCreatedBy());
+    }
+    @Test
+    public void testGetDepartmentThrowsDepartmentNotFoundException() throws Exception {
+        long id = 1;
+
+        when(departmentRepository.findById(id))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> departmentService.getDepartment(id))
+                .isInstanceOf(DepartmentNotFoundException.class);
     }
 
     @Test
@@ -88,6 +111,17 @@ public class DepartmentServiceTest {
         assertEquals(1, updatedDepartment.getCreatedBy());
         verify(departmentRepository, times(1)).save(updatedDepartment);
     }
+    @Test
+    public void testUpdateDepartmentThrowsDepartmentNotFoundException() {
+        long id = 1;
+        Department newDepartment = new Department("DevOps", "Description 2", 2, 2);
+
+        when(departmentRepository.findById(id))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> departmentService.updateDepartment(id, newDepartment))
+                .isInstanceOf(DepartmentNotFoundException.class);
+    }
 
     @Test
     public void testDeleteDepartment() throws Exception {
@@ -101,5 +135,15 @@ public class DepartmentServiceTest {
         verify(departmentRepository, times(1)).save(department);
         assertTrue(department.isDeleted());
         assertFalse(department.isActive());
+    }
+    @Test
+    public void testDeleteDepartmentThrowsDepartmentNotFoundException() {
+        long id = 1;
+
+        when(departmentRepository.findById(id))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> departmentService.deleteDepartment(id))
+                .isInstanceOf(DepartmentNotFoundException.class);
     }
 }
