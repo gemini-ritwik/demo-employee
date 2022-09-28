@@ -1,5 +1,6 @@
 package com.example.employee;
 
+import com.example.employee.dto.DepartmentDTO;
 import com.example.employee.exception.DepartmentNotFoundException;
 import com.example.employee.exception.NoDataFoundException;
 import com.example.employee.models.Department;
@@ -8,6 +9,7 @@ import com.example.employee.services.DepartmentServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.modelmapper.ModelMapper;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
@@ -29,15 +31,39 @@ public class DepartmentServiceTest {
 
     public List<Department> myDepartments;
 
+    private final ModelMapper modelMapper = new ModelMapper();
+
     @Test
     public void testGetDepartments() throws Exception {
 
         myDepartments = new ArrayList<>();
-        myDepartments.add(new Department("HR", "Description 1",1));
-        myDepartments.add(new Department("DevOps", "Description 2",2));
-        myDepartments.add(new Department("Design", "Description 3",1));
+        myDepartments.add(new Department(1L,
+                "HR",
+                "Description 1",
+                1,
+                1,
+                true,
+                false,
+                null));
+        myDepartments.add(new Department(2L,
+                "DevOps",
+                "Description 2",
+                2,
+                2,
+                true,
+                false,
+                null));
+        myDepartments.add(new Department(3L,
+                "Design",
+                "Description 3",
+                1,
+                1,
+                true,
+                false,
+                null));
 
-        when(departmentRepository.findAll()).thenReturn(myDepartments);
+        when(departmentRepository.findByIsActiveAndIsDeleted(true, false))
+                .thenReturn(myDepartments);
 
         assertEquals(3, departmentService.getDepartments().size());
     }
@@ -46,7 +72,8 @@ public class DepartmentServiceTest {
 
         myDepartments = new ArrayList<>();
 
-        when(departmentRepository.findAll()).thenReturn(myDepartments);
+        when(departmentRepository.findByIsActiveAndIsDeleted(true, false))
+                .thenReturn(myDepartments);
 
         assertThatThrownBy(() -> departmentService.getDepartments())
                 .isInstanceOf(NoDataFoundException.class);
@@ -80,17 +107,29 @@ public class DepartmentServiceTest {
     public void testCreateDepartment() {
 
         long id = 1;
-        Department department = new Department(id, "HR", "Description 1", 1, 1, true, false, null);
-        department.setActive(false);
+        Department department = new Department(id,
+                "HR",
+                "Description 1",
+                1,
+                1,
+                true,
+                false,
+                null);
 
         when(departmentRepository.save(department)).thenReturn(department);
 
-        //Since department has not been created, it is not active
-        assertFalse(department.isActive());
+        DepartmentDTO departmentDTO = departmentToDepartmentDTO(department);
 
-        departmentService.createDepartment(department);
-        //The department becomes active after being saved to the DB
-        assertTrue(department.isActive());
+        departmentService.createDepartment(departmentDTO);
+
+        verify(departmentRepository, times(1))
+                .save(argThat(argument -> argument.getDeptId().equals(department.getDeptId())
+                        && argument.getDeptName().equals(department.getDeptName())
+                        && argument.getDeptDescription().equals(department.getDeptDescription())
+                        && argument.getCreatedBy() == department.getCreatedBy()
+                        && argument.getUpdatedBy() == department.getUpdatedBy()
+                        && argument.isActive() == department.isActive()
+                        && argument.isDeleted() == department.isDeleted()));
     }
 
     @Test
@@ -100,16 +139,17 @@ public class DepartmentServiceTest {
         Department oldDepartment = new Department(id, "HR", "Description 1", 1, 1, true, false, null);
         Department newDepartment = new Department("DevOps", "Description 2", 2, 2);
 
-        when(departmentRepository.findById(id)).thenReturn(Optional.of(oldDepartment));
+        when(departmentRepository.findById(id))
+                .thenReturn(Optional.of(oldDepartment));
 
-        Department updatedDepartment = departmentService.updateDepartment(id, newDepartment);
+        DepartmentDTO updatedDepartment = departmentService
+                .updateDepartment(id, departmentToDepartmentDTO(newDepartment));
 
         assertEquals(id, updatedDepartment.getDeptId());
         assertEquals(newDepartment.getDeptName(), updatedDepartment.getDeptName());
         assertEquals(newDepartment.getDeptDescription(), updatedDepartment.getDeptDescription());
         assertEquals(newDepartment.getUpdatedBy(), updatedDepartment.getUpdatedBy());
         assertEquals(1, updatedDepartment.getCreatedBy());
-        verify(departmentRepository, times(1)).save(updatedDepartment);
     }
     @Test
     public void testUpdateDepartmentThrowsDepartmentNotFoundException() {
@@ -119,7 +159,8 @@ public class DepartmentServiceTest {
         when(departmentRepository.findById(id))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> departmentService.updateDepartment(id, newDepartment))
+        assertThatThrownBy(() -> departmentService
+                .updateDepartment(id, departmentToDepartmentDTO(newDepartment)))
                 .isInstanceOf(DepartmentNotFoundException.class);
     }
 
@@ -145,5 +186,18 @@ public class DepartmentServiceTest {
 
         assertThatThrownBy(() -> departmentService.deleteDepartment(id))
                 .isInstanceOf(DepartmentNotFoundException.class);
+    }
+
+
+    public Department departmentDTOToDepartment(DepartmentDTO departmentDTO)
+    {
+        Department department = this.modelMapper.map(departmentDTO, Department.class);
+        department.setActive(true);
+        return department;
+    }
+    public DepartmentDTO departmentToDepartmentDTO(Department department)
+    {
+        DepartmentDTO departmentDTO = this.modelMapper.map(department, DepartmentDTO.class);
+        return departmentDTO;
     }
 }

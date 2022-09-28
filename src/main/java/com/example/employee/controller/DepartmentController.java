@@ -1,6 +1,6 @@
 package com.example.employee.controller;
 
-import com.example.employee.models.Department;
+import com.example.employee.dto.DepartmentDTO;
 import com.example.employee.services.DepartmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,7 @@ public class DepartmentController {
      */
     @GetMapping("/departments")
     public ResponseEntity<Object> getDepartments() throws Exception {
-        List<Department> departments = departmentService.getDepartments();
+        List<DepartmentDTO> departments = departmentService.getDepartments();
 
         LOGGER.info("GET Request for all departments is successful");
         return new ResponseEntity<>(departments, HttpStatus.OK);
@@ -43,7 +43,7 @@ public class DepartmentController {
     @GetMapping("/departments/{deptId}")
     public ResponseEntity<Object> getDepartment(@PathVariable String deptId) throws Exception {
         Long id = Long.parseLong(deptId);
-        Department department = departmentService.getDepartment(id);
+        DepartmentDTO department = departmentService.getDepartment(id);
 
         LOGGER.info("GET Request is successful for department with id : "+deptId);
         return new ResponseEntity<Object>(department, HttpStatus.OK);
@@ -57,7 +57,7 @@ public class DepartmentController {
      * @throws Exception when bad request
      */
     @PostMapping("/departments")
-    public ResponseEntity<Object> createDepartment(@Valid @RequestBody Department department) throws Exception{
+    public ResponseEntity<Object> createDepartment(@Valid @RequestBody DepartmentDTO department) throws Exception{
         departmentService.createDepartment(department);
 
         LOGGER.info("POST Request for department is successful");
@@ -73,7 +73,7 @@ public class DepartmentController {
      * @throws Exception when bad request
      */
     @PutMapping("/departments/{deptId}")
-    public ResponseEntity<Object> updateDepartment(@PathVariable String deptId, @Valid @RequestBody Department department) throws Exception{
+    public ResponseEntity<Object> updateDepartment(@PathVariable String deptId, @Valid @RequestBody DepartmentDTO department) throws Exception{
         Long id = Long.parseLong(deptId);
         departmentService.updateDepartment(id, department);
 
@@ -90,7 +90,7 @@ public class DepartmentController {
      */
     @DeleteMapping("/departments/{deptId}")
     public ResponseEntity<Object> deleteDepartment(@PathVariable String deptId) throws Exception{
-        Department dept = departmentService.deleteDepartment(Long.parseLong(deptId));
+        DepartmentDTO dept = departmentService.deleteDepartment(Long.parseLong(deptId));
 
         LOGGER.info("DELETE Request is successful for department with id : "+deptId);
         return new ResponseEntity<>(dept, HttpStatus.OK);

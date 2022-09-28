@@ -1,10 +1,10 @@
 package com.example.employee;
 
 import com.example.employee.controller.DepartmentController;
+import com.example.employee.dto.DepartmentDTO;
 import com.example.employee.exception.DepartmentNotFoundException;
 import com.example.employee.exception.GlobalExceptionHandler;
 import com.example.employee.exception.NoDataFoundException;
-import com.example.employee.models.Department;
 import com.example.employee.services.DepartmentServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +21,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
@@ -44,8 +46,9 @@ public class DepartmentControllerTest {
     @InjectMocks
     DepartmentController departmentController;
 
-    List<Department> departments;
-    Department department;
+    List<DepartmentDTO> departments;
+    DepartmentDTO department;
+    Date date = new Date();
 
     @BeforeEach
     public void setUp() {
@@ -58,16 +61,33 @@ public class DepartmentControllerTest {
     @Test
     public void testGetDepartments() throws Exception {
         departments = new ArrayList<>();
-        departments.add(new Department(1L, "HR", "Description 1", 1, 1, true, false, null));
-        departments.add(new Department(2L, "DevOps", "Description 2", 2, 2, true, false, null));
-        departments.add(new Department(3L, "Design", "Description 3", 1, 1, true, false, null));
+        departments.add(new DepartmentDTO(1L,
+                "HR",
+                "Description 1",
+                1,
+                1,
+                new Timestamp(date.getTime()),
+                new Timestamp(date.getTime())));
+        departments.add(new DepartmentDTO(2L,
+                "DevOps",
+                "Description 2",
+                2,
+                2,
+                new Timestamp(date.getTime()),
+                new Timestamp(date.getTime())));
+        departments.add(new DepartmentDTO(3L,
+                "Design",
+                "Description 3",
+                1,
+                1,
+                new Timestamp(date.getTime()),
+                new Timestamp(date.getTime())));
 
         when(departmentService.getDepartments()).thenReturn(departments);
 
         this.mockMvc.perform(get("/departments"))
                 .andExpect(status().isOk())
                 .andDo(print());
-
     }
     @Test
     public void testGetDepartmentsStatusNotFound() throws Exception{
@@ -85,7 +105,13 @@ public class DepartmentControllerTest {
     @Test
     public void testGetDepartment() throws Exception {
         long deptId = 1;
-        department = new Department(deptId, "HR", "Description 1", 1, 1, true, false, null);
+        department = new DepartmentDTO(deptId,
+                "HR",
+                "Description 1",
+                1,
+                1,
+                new Timestamp(date.getTime()),
+                new Timestamp(date.getTime()));
 
         when(departmentService.getDepartment(deptId)).thenReturn(department);
 
@@ -114,7 +140,14 @@ public class DepartmentControllerTest {
 
     @Test
     public void testCreateDepartment() throws Exception {
-        department = new Department("HR", "Description 1", 1);
+        long deptId = 1;
+        department = new DepartmentDTO(deptId,
+                "HR",
+                "Description 1",
+                1,
+                1,
+                new Timestamp(date.getTime()),
+                new Timestamp(date.getTime()));
 
         ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(department);
@@ -127,7 +160,14 @@ public class DepartmentControllerTest {
     }
     @Test
     public void testCreateDepartmentBadRequest() throws Exception {
-        department = new Department("", "Description 1", 1);
+        long deptId = 1;
+        department = new DepartmentDTO(deptId,
+                "",
+                "Description 1",
+                1,
+                1,
+                new Timestamp(date.getTime()),
+                new Timestamp(date.getTime()));
 
         ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(department);
@@ -144,7 +184,13 @@ public class DepartmentControllerTest {
     @Test
     public void testUpdateDepartment() throws Exception {
         long deptId = 1;
-        department = new Department(deptId, "HR", "Description 1", 1, 1, true, false, null);
+        department = new DepartmentDTO(deptId,
+                "Name 1",
+                "Description 1",
+                1,
+                1,
+                new Timestamp(date.getTime()),
+                new Timestamp(date.getTime()));
 
         when(departmentService.updateDepartment(deptId, department)).thenReturn(department);
 
@@ -160,7 +206,13 @@ public class DepartmentControllerTest {
     @Test
     public void testUpdateDepartmentBadRequest() throws Exception {
         long deptId = 1;
-        department = new Department(deptId, "", "Description 1", 1, 1, true, false, null);
+        department = new DepartmentDTO(deptId,
+                "",
+                "Description 1",
+                1,
+                1,
+                new Timestamp(date.getTime()),
+                new Timestamp(date.getTime()));
 
         ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(department);
@@ -177,7 +229,13 @@ public class DepartmentControllerTest {
     @Test
     public void testDeleteDepartment() throws Exception {
         long deptId = 1;
-        department = new Department(deptId, "HR", "Description 1", 1, 1, true, false, null);
+        department = new DepartmentDTO(deptId,
+                "HR",
+                "Description 1",
+                1,
+                1,
+                new Timestamp(date.getTime()),
+                new Timestamp(date.getTime()));
 
         when(departmentService.deleteDepartment(deptId)).thenReturn(department);
 
@@ -202,5 +260,6 @@ public class DepartmentControllerTest {
                         .value("Department not found with id : 1"))
                 .andDo(print());
     }
+
 
 }
