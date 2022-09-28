@@ -34,16 +34,10 @@ public class EmployeeServiceImpl implements EmployeeService{
     public List<Employee> getEmployees() throws Exception{
         LOGGER.trace("Entering the method getEmployees.");
 
-        List<Employee> employees = new ArrayList<>();
-
-        employeeRepository.findAll().forEach(employee -> {
-            //Check if record is active
-            if(employee.isActive() && !employee.isDeleted())
-                employees.add(employee);
-        });
+        List<Employee> employees = employeeRepository.findByIsActiveAndIsDeleted(true,false);
 
         //Check if the list of data is empty
-        if(employees.isEmpty()) {
+        if(employees.isEmpty() || employees.size()==0) {
             LOGGER.error("No data found in the employee table");
             throw new NoDataFoundException("There is no data in the employee table");
         }

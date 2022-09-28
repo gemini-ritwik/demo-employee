@@ -27,16 +27,11 @@ public class DepartmentServiceImpl implements DepartmentService{
     @Override
     public List<Department> getDepartments() throws Exception{
         LOGGER.trace("Entering method getDepartment...");
-        List<Department> departments = new ArrayList<>();
 
-        departmentRepository.findAll().forEach(department -> {
-            //Check if record is active
-            if(department.isActive() && !department.isDeleted())
-                departments.add(department);
-        });
+        List<Department> departments = departmentRepository.findByIsActiveAndIsDeleted(true, false);
 
         //Check if the list of data is empty
-        if (departments.isEmpty()) {
+        if (departments.isEmpty() || departments.size() == 0) {
             LOGGER.error("No data found in the department table");
             throw new NoDataFoundException("There is no data in the department table");
         }
