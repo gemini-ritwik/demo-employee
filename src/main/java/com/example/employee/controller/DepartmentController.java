@@ -19,7 +19,12 @@ public class DepartmentController {
     @Autowired
     DepartmentService departmentService;
 
-    //Get all the departments
+    /**
+     * API to fetch all the departments
+     *
+     * @return List<Departments>
+     * @throws Exception Throws exception when list is empty
+     */
     @GetMapping("/departments")
     public ResponseEntity<Object> getDepartments() throws Exception {
         List<Department> departments = departmentService.getDepartments();
@@ -28,7 +33,13 @@ public class DepartmentController {
         return new ResponseEntity<>(departments, HttpStatus.OK);
     }
 
-    //Get a specific department
+    /**
+     * API to fetch department by department id
+     *
+     * @param deptId Department id of the department to be fetched
+     * @return Department
+     * @throws Exception Throws exception when department does not exist
+     */
     @GetMapping("/departments/{deptId}")
     public ResponseEntity<Object> getDepartment(@PathVariable String deptId) throws Exception {
         Long id = Long.parseLong(deptId);
@@ -38,7 +49,13 @@ public class DepartmentController {
         return new ResponseEntity<Object>(department, HttpStatus.OK);
     }
 
-    //Adding a new Department
+    /**
+     * API to create a new department
+     *
+     * @param department Department to be created
+     * @return Success Message
+     * @throws Exception when bad request
+     */
     @PostMapping("/departments")
     public ResponseEntity<Object> createDepartment(@Valid @RequestBody Department department) throws Exception{
         departmentService.createDepartment(department);
@@ -47,7 +64,14 @@ public class DepartmentController {
         return new ResponseEntity<>("Department details added successfully", HttpStatus.CREATED);
     }
 
-    //Updating the details of a department
+    /**
+     * API to update the department
+     *
+     * @param deptId Department id of the employee to be updated
+     * @param department Department details with which department is to be updated
+     * @return Success Message
+     * @throws Exception when bad request
+     */
     @PutMapping("/departments/{deptId}")
     public ResponseEntity<Object> updateDepartment(@PathVariable String deptId, @Valid @RequestBody Department department) throws Exception{
         Long id = Long.parseLong(deptId);
@@ -57,7 +81,13 @@ public class DepartmentController {
         return new ResponseEntity<>("Department details have been successfully updated", HttpStatus.OK);
     }
 
-    //Deleting the details of a department
+    /**
+     * API to delete the department by department id
+     *
+     * @param deptId Department id of the department to be deleted
+     * @return Department
+     * @throws Exception when department to be deleted does not exist
+     */
     @DeleteMapping("/departments/{deptId}")
     public ResponseEntity<Object> deleteDepartment(@PathVariable String deptId) throws Exception{
         Department dept = departmentService.deleteDepartment(Long.parseLong(deptId));

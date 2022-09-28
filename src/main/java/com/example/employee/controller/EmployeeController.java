@@ -22,7 +22,12 @@ public class EmployeeController {
     @Autowired
     DepartmentService departmentService;
 
-    //Get all the employees
+    /**
+     * API to fetch all the employees
+     *
+     * @return List<Employee>
+     * @throws Exception when there are no employees
+     */
     @GetMapping("/employees")
     public ResponseEntity<Object> getEmployees() throws Exception{
         List<Employee> employees = employeeService.getEmployees();
@@ -31,7 +36,13 @@ public class EmployeeController {
         return new ResponseEntity<>(employees, HttpStatus.OK);
     }
 
-    //Get a specific employee
+    /**
+     * API to fetch employee by employee id
+     *
+     * @param employeeId Employee id of the employee to be fetched
+     * @return Employee
+     * @throws Exception when employee does not exist
+     */
     @GetMapping("/employees/{employeeId}")
     public ResponseEntity<Object> getEmployee(@PathVariable String employeeId) throws Exception{
         Long id = Long.parseLong(employeeId);
@@ -41,7 +52,14 @@ public class EmployeeController {
         return new ResponseEntity<Object>(employee, HttpStatus.OK);
     }
 
-    //Adding a new Employee
+    /**
+     * API to create a new employee
+     *
+     * @param deptId Department id of the department to which the employee belongs to
+     * @param employee Employee details that are to be created
+     * @return Success Message
+     * @throws Exception when bad request
+     */
     @PostMapping("/departments/{deptId}/employees")
     public ResponseEntity<Object> createEmployee(@PathVariable String deptId, @Valid @RequestBody Employee employee) throws Exception {
         Long id = Long.parseLong(deptId);
@@ -51,7 +69,15 @@ public class EmployeeController {
         return new ResponseEntity<>("Employee details added successfully", HttpStatus.CREATED);
     }
 
-    //Updating the details of an employee
+    /**
+     * API to update the details of the employee
+     *
+     * @param deptId Department id of the department to which the employee exist
+     * @param employeeId Employee id of the employee to be updated
+     * @param employee Employee details with which employee is to be updated
+     * @return Success Message
+     * @throws Exception when bad request
+     */
     @PutMapping("/departments/{deptId}/employees/{employeeId}")
     public ResponseEntity<Object> updateEmployee(@PathVariable String deptId, @PathVariable String employeeId, @Valid @RequestBody Employee employee) throws Exception{
         employeeService.updateEmployee(Long.parseLong(deptId), Long.parseLong(employeeId), employee);
@@ -60,7 +86,13 @@ public class EmployeeController {
         return new ResponseEntity<>("Employee details have been successfully updated", HttpStatus.OK);
     }
 
-    //Deleting the details of an employee
+    /**
+     * API to delete the employee
+     *
+     * @param employeeId Employee id of the employee to be deleted
+     * @return Employee
+     * @throws Exception when employee to be deleted does not exist
+     */
     @DeleteMapping("/employees/{employeeId}")
     public ResponseEntity<Object> deleteEmployee(@PathVariable String employeeId) throws Exception{
         Employee employee = employeeService.deleteEmployee(Long.parseLong(employeeId));
