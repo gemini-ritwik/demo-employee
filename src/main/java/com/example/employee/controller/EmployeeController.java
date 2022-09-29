@@ -1,6 +1,5 @@
 package com.example.employee.controller;
 
-import com.example.employee.dto.DepartmentDTO;
 import com.example.employee.dto.EmployeeDTO;
 import com.example.employee.services.DepartmentService;
 import com.example.employee.services.EmployeeService;
@@ -38,7 +37,7 @@ public class EmployeeController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Employees Found",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DepartmentDTO.class))}),
+                            schema = @Schema(implementation = EmployeeDTO.class))}),
             @ApiResponse(responseCode = "404", description = "No Employee Found",
                     content = @Content)
     })
@@ -61,7 +60,7 @@ public class EmployeeController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Found the Employee",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DepartmentDTO.class))}),
+                            schema = @Schema(implementation = EmployeeDTO.class))}),
             @ApiResponse(responseCode = "404", description = "Employee not found",
                     content = @Content)
     })
@@ -133,7 +132,7 @@ public class EmployeeController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Employee Deleted",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DepartmentDTO.class))}),
+                            schema = @Schema(implementation = EmployeeDTO.class))}),
             @ApiResponse(responseCode = "404", description = "Employee to be deleted not found",
                     content = @Content)
     })
