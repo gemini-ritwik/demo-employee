@@ -154,13 +154,18 @@ public class EmployeeServiceImpl implements EmployeeService{
         employee.setActive(true);
         employee.setDeleted(false);
         employee.getEmployeeAddress().setActive(true);
-        Optional<Department> department = departmentRepository.findById(deptId);
-        employee.setDepartment(department.orElseThrow(
+        Department department = departmentRepository.
+                findById(deptId)
+                .orElseThrow(
                 () -> {
                     LOGGER.error("Department not found to add employee to, with id : "+deptId);
                     return new DepartmentNotFoundException("Department not found with deptId : "+deptId);
-                }
-        ));
+                });
+        if(!department.isActive() && department.isDeleted()) {
+            LOGGER.error("Department not found to add employee to, with id : "+deptId);
+            throw new DepartmentNotFoundException("Department not found with deptId : "+deptId);
+        }
+        employee.setDepartment(department);
         employeeRepository.save(employee);
         LOGGER.info("Employee created successfully");
     }

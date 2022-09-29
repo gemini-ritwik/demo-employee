@@ -1,7 +1,5 @@
 package com.example.employee.dto;
 
-import com.example.employee.models.Address;
-import com.example.employee.models.Department;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
