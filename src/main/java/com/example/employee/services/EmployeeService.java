@@ -1,15 +1,14 @@
 package com.example.employee.services;
 
-import com.example.employee.models.Employee;
-import org.springframework.http.ResponseEntity;
+import com.example.employee.dto.EmployeeDTO;
 
 import java.util.List;
 
 public interface EmployeeService {
 
-    public List<Employee> getEmployees() throws Exception;
-    public Employee getEmployee(Long employeeId) throws Exception;
-    public Employee updateEmployee(Long deptId, Long employeeId, Employee employee) throws Exception;
-    public void createEmployee(Long deptId, Employee employee) throws Exception;
-    public Employee deleteEmployee(Long employeeId) throws Exception;
+    public List<EmployeeDTO> getEmployees() throws Exception;
+    public EmployeeDTO getEmployee(Long employeeId) throws Exception;
+    public EmployeeDTO updateEmployee(Long deptId, Long employeeId, EmployeeDTO employeeDTO) throws Exception;
+    public void createEmployee(Long deptId, EmployeeDTO employeeDTO) throws Exception;
+    public EmployeeDTO deleteEmployee(Long employeeId) throws Exception;
 }

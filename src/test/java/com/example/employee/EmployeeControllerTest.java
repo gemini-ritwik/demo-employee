@@ -1,12 +1,11 @@
 package com.example.employee;
 
 import com.example.employee.controller.EmployeeController;
+import com.example.employee.dto.DepartmentDTO;
+import com.example.employee.dto.EmployeeDTO;
 import com.example.employee.exception.EmployeeNotFoundException;
 import com.example.employee.exception.GlobalExceptionHandler;
 import com.example.employee.exception.NoDataFoundException;
-import com.example.employee.models.Address;
-import com.example.employee.models.Department;
-import com.example.employee.models.Employee;
 import com.example.employee.services.EmployeeServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +22,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
@@ -46,9 +47,10 @@ public class EmployeeControllerTest {
     @InjectMocks
     EmployeeController employeeController;
 
-    List<Employee> employees;
-    Employee employee;
-    Department department;
+    List<EmployeeDTO> employees;
+    EmployeeDTO employee;
+    DepartmentDTO department;
+    Date date = new Date();
 
     @BeforeEach
     public void setUp() {
@@ -61,29 +63,23 @@ public class EmployeeControllerTest {
     @Test
     public void testGetEmployees() throws Exception {
         employees = new ArrayList<>();
-        employees.add(new Employee(1L,
+        employees.add(new EmployeeDTO(1L,
                 "Name 1",
-                new Address("Address 1","City 1", "State 1", "pin1"),
                 "Designation 1",
                 "1234567890",
-                true,
-                false,
+                "Address 1",
+                "City 1",
+                "State 1",
+                "Pin 1",
                 null));
-        employees.add(new Employee(2L,
+        employees.add(new EmployeeDTO(2L,
                 "Name 2",
-                new Address("Address 2","City 2", "State 2", "pin2"),
                 "Designation 2",
                 "1234567890",
-                true,
-                false,
-                null));
-        employees.add(new Employee(1L,
-                "Name 3",
-                new Address("Address 3","City 3", "State 3", "pin"),
-                "Designation 3",
-                "1234567890",
-                false,
-                true,
+                "Address 2",
+                "City 2",
+                "State 2",
+                "Pin 2",
                 null));
 
         when(employeeService.getEmployees()).thenReturn(employees);
@@ -108,13 +104,14 @@ public class EmployeeControllerTest {
     @Test
     public void testGetEmployee() throws Exception{
         long employeeId = 1;
-        Employee employee = new Employee(1L,
+        employee = new EmployeeDTO(1L,
                 "Name 1",
-                new Address("Address 1","City 1", "State 1", "pin1"),
                 "Designation 1",
                 "1234567890",
-                true,
-                false,
+                "Address 1",
+                "City 1",
+                "State 1",
+                "Pin 1",
                 null);
 
         when(employeeService.getEmployee(employeeId)).thenReturn(employee);
@@ -144,15 +141,22 @@ public class EmployeeControllerTest {
     @Test
     public void testCreateEmployee() throws Exception {
         long deptId = 1;
-        department = new Department(deptId, "HR", "Description 1", 1, 1, true, false, null);
+        department = new DepartmentDTO(deptId,
+                "HR",
+                "Description 1",
+                1,
+                1,
+                new Timestamp(date.getTime()),
+                new Timestamp(date.getTime()));
         long employeeId = 1;
-        Employee employee = new Employee(1L,
+        employee = new EmployeeDTO(1L,
                 "Name 1",
-                new Address("Address 1","City 1", "State 1", "pin1"),
                 "Designation 1",
                 "1234567890",
-                true,
-                false,
+                "Address 1",
+                "City 1",
+                "State 1",
+                "Pin 1",
                 department);
 
         ObjectMapper mapper = new ObjectMapper();
@@ -167,21 +171,22 @@ public class EmployeeControllerTest {
     @Test
     public void testCreateEmployeeBadRequest() throws Exception {
         long deptId = 1;
-        department = new Department(deptId, "HR",
+        department = new DepartmentDTO(deptId,
+                "HR",
                 "Description 1",
                 1,
                 1,
-                true,
-                false,
-                null);
+                new Timestamp(date.getTime()),
+                new Timestamp(date.getTime()));
         long employeeId = 1;
-        Employee employee = new Employee(1L,
+        employee = new EmployeeDTO(1L,
                 "",
-                new Address("Address 1","City 1", "State 1", "pin1"),
                 "Designation 1",
                 "",
-                true,
-                false,
+                "Address 1",
+                "City 1",
+                "State 1",
+                "Pin 1",
                 department);
 
         ObjectMapper mapper = new ObjectMapper();
@@ -201,15 +206,22 @@ public class EmployeeControllerTest {
     @Test
     public void testUpdateEmployee() throws Exception {
         long deptId = 1;
-        department = new Department(deptId, "HR", "Description 1", 1, 1, true, false, null);
+        department = new DepartmentDTO(deptId,
+                "HR",
+                "Description 1",
+                1,
+                1,
+                new Timestamp(date.getTime()),
+                new Timestamp(date.getTime()));
         long employeeId = 1;
-        Employee employee = new Employee(1L,
+        employee = new EmployeeDTO(1L,
                 "Name 1",
-                new Address("Address 1","City 1", "State 1", "pin1"),
                 "Designation 1",
                 "1234567890",
-                true,
-                false,
+                "Address 1",
+                "City 1",
+                "State 1",
+                "Pin 1",
                 department);
 
         when(employeeService.updateEmployee(deptId, employeeId, employee)).thenReturn(employee);
@@ -226,15 +238,22 @@ public class EmployeeControllerTest {
     @Test
     public void testUpdateEmployeeBadRequest() throws Exception {
         long deptId = 1;
-        department = new Department(deptId, "HR", "Description 1", 1, 1, true, false, null);
+        department = new DepartmentDTO(deptId,
+                "HR",
+                "Description 1",
+                1,
+                1,
+                new Timestamp(date.getTime()),
+                new Timestamp(date.getTime()));
         long employeeId = 1;
-        Employee employee = new Employee(1L,
+        employee = new EmployeeDTO(1L,
                 "",
-                new Address("Address 1","City 1", "State 1", "pin1"),
                 "Designation 1",
-                "hello",
-                true,
-                false,
+                "1234",
+                "Address 1",
+                "City 1",
+                "State 1",
+                "Pin 1",
                 department);
 
 
@@ -255,15 +274,22 @@ public class EmployeeControllerTest {
     @Test
     public void testDeleteEmployee() throws Exception {
         long deptId = 1;
-        department = new Department(deptId, "HR", "Description 1", 1, 1, true, false, null);
+        department = new DepartmentDTO(deptId,
+                "HR",
+                "Description 1",
+                1,
+                1,
+                new Timestamp(date.getTime()),
+                new Timestamp(date.getTime()));
         long employeeId = 1;
-        Employee employee = new Employee(1L,
+        employee = new EmployeeDTO(1L,
                 "Name 1",
-                new Address("Address 1","City 1", "State 1", "pin1"),
                 "Designation 1",
                 "1234567890",
-                true,
-                false,
+                "Address 1",
+                "City 1",
+                "State 1",
+                "Pin 1",
                 department);
 
         when(employeeService.deleteEmployee(employeeId)).thenReturn(employee);

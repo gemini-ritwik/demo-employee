@@ -1,5 +1,7 @@
 package com.example.employee;
 
+import com.example.employee.dto.DepartmentDTO;
+import com.example.employee.dto.EmployeeDTO;
 import com.example.employee.exception.DepartmentNotFoundException;
 import com.example.employee.exception.EmployeeNotFoundException;
 import com.example.employee.exception.NoDataFoundException;
@@ -13,6 +15,8 @@ import com.example.employee.services.EmployeeServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
@@ -36,6 +40,8 @@ public class EmployeeServiceTest {
     @InjectMocks
     DepartmentServiceImpl departmentService;
 
+    private final ModelMapper modelMapper = new ModelMapper();
+
     @Test
     public void testGetEmployees() throws Exception {
         List<Employee> employees = new ArrayList<>();
@@ -55,16 +61,9 @@ public class EmployeeServiceTest {
                 true,
                 false,
                 null));
-        employees.add(new Employee(1L,
-                "Name 3",
-                new Address("Address 3","City 3", "State 3", "pin"),
-                "Designation 3",
-                "1234567890",
-                false,
-                true,
-                null));
 
-        when(employeeRepository.findAll()).thenReturn(employees);
+        when(employeeRepository.findByIsActiveAndIsDeleted(true, false))
+                .thenReturn(employees);
 
         assertEquals(2, employeeService.getEmployees().size());
     }
@@ -72,7 +71,7 @@ public class EmployeeServiceTest {
     public void testGetEmployeesThrowsNoDataFoundException() {
         List<Employee> employees = new ArrayList<>();
 
-        when(employeeRepository.findAll())
+        when(employeeRepository.findByIsActiveAndIsDeleted(true, false))
                 .thenReturn(employees);
 
         assertThatThrownBy(() -> employeeService.getEmployees())
@@ -93,7 +92,16 @@ public class EmployeeServiceTest {
 
         when(employeeRepository.findById(employeeId)).thenReturn(Optional.of(employee));
 
-        assertEquals(employee, employeeService.getEmployee(employeeId));
+        EmployeeDTO employeeDTO = employeeService.getEmployee(employeeId);
+        assertEquals(employee.getEmployeeId(), employeeDTO.getEmployeeId());
+        assertEquals(employee.getEmployeeName(), employeeDTO.getEmployeeName());
+        assertEquals(employee.getEmployeeDesignation(), employeeDTO.getEmployeeDesignation());
+        assertEquals(employee.getPhoneNumber(), employeeDTO.getPhoneNumber());
+        assertEquals(employee.getEmployeeAddress().getAddress(), employeeDTO.getAddress());
+        assertEquals(employee.getEmployeeAddress().getCity(), employeeDTO.getCity());
+        assertEquals(employee.getEmployeeAddress().getState(), employeeDTO.getState());
+        assertEquals(employee.getEmployeeAddress().getPincode(), employeeDTO.getPincode());
+        assertEquals(employee.getDepartment(), employeeDTO.getDepartment());
     }
     @Test
     public void testGetEmployeeThrowsEmployeeNotFoundException() {
@@ -129,12 +137,15 @@ public class EmployeeServiceTest {
         when(departmentRepository.findById(deptId)).thenReturn(Optional.of(department));
         when(employeeRepository.save(employee)).thenReturn(employee);
 
-        assertFalse(employee.isActive());
+        EmployeeDTO employeeDTO = employeeToEmployeeDTO(employee);
 
-        employeeService.createEmployee(deptId, employee);
+        employeeService.createEmployee(deptId, employeeDTO);
 
-        assertTrue(employee.isActive());
-        assertEquals(department, employee.getDepartment());
+        verify(employeeRepository, times(1))
+                .save(argThat(argument -> argument.getEmployeeName().equals(employee.getEmployeeName())
+                        && argument.getEmployeeId().equals(employee.getEmployeeId())
+                        && argument.getEmployeeDesignation().equals(employee.getEmployeeDesignation())
+                        && argument.getPhoneNumber().equals(employee.getPhoneNumber())));
     }
     @Test
     public void testCreateEmployeeThrowsDepartmentNotFoundException() {
@@ -151,7 +162,7 @@ public class EmployeeServiceTest {
         when(departmentRepository.findById(deptId))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> employeeService.createEmployee(deptId, employee))
+        assertThatThrownBy(() -> employeeService.createEmployee(deptId, employeeToEmployeeDTO(employee)))
                 .isInstanceOf(DepartmentNotFoundException.class);
     }
 
@@ -188,15 +199,19 @@ public class EmployeeServiceTest {
         when(employeeRepository.findById(employeeId)).thenReturn(Optional.of(oldEmployee));
         when(employeeRepository.save(oldEmployee)).thenReturn(oldEmployee);
 
-        Employee updatedEmployee = employeeService.updateEmployee(deptId, employeeId, newEmployee);
+        EmployeeDTO updatedEmployee = employeeService.updateEmployee(deptId,
+                employeeId,
+                employeeToEmployeeDTO(newEmployee));
 
         assertEquals(employeeId, updatedEmployee.getEmployeeId());
         assertEquals(newEmployee.getEmployeeName(), updatedEmployee.getEmployeeName());
-        assertEquals(newEmployee.getEmployeeAddress(), updatedEmployee.getEmployeeAddress());
+        assertEquals(newEmployee.getEmployeeAddress().getAddress(), updatedEmployee.getAddress());
+        assertEquals(newEmployee.getEmployeeAddress().getState(), updatedEmployee.getState());
+        assertEquals(newEmployee.getEmployeeAddress().getCity(), updatedEmployee.getCity());
+        assertEquals(newEmployee.getEmployeeAddress().getPincode(), updatedEmployee.getPincode());
         assertEquals(newEmployee.getEmployeeDesignation(), updatedEmployee.getEmployeeDesignation());
         assertEquals(newEmployee.getPhoneNumber(), updatedEmployee.getPhoneNumber());
-        assertEquals(department, updatedEmployee.getDepartment());
-        verify(employeeRepository, times(1)).save(updatedEmployee);
+        assertEquals(department.getDeptName(), updatedEmployee.getDepartment().getDeptName());
     }
     @Test
     public void testUpdateDepartmentThrowsEmployeeNotFoundException() {
@@ -232,7 +247,9 @@ public class EmployeeServiceTest {
         when(employeeRepository.findById(employeeId))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> employeeService.updateEmployee(deptId, employeeId, newEmployee))
+        assertThatThrownBy(() -> employeeService.updateEmployee(deptId,
+                employeeId,
+                employeeToEmployeeDTO(newEmployee)))
                 .isInstanceOf(EmployeeNotFoundException.class);
     }
 
@@ -265,5 +282,41 @@ public class EmployeeServiceTest {
 
         assertThatThrownBy(() -> employeeService.deleteEmployee(employeeId))
                 .isInstanceOf(EmployeeNotFoundException.class);
+    }
+
+
+
+    //Department converter
+    public Department departmentDTOToDepartment(DepartmentDTO departmentDTO)
+    {
+        Department department = this.modelMapper.map(departmentDTO, Department.class);
+        department.setActive(true);
+        return department;
+    }
+    public DepartmentDTO departmentToDepartmentDTO(Department department)
+    {
+        DepartmentDTO departmentDTO = this.modelMapper.map(department, DepartmentDTO.class);
+        return departmentDTO;
+    }
+    //Employee converter
+    public Employee employeeDTOToEmployee(EmployeeDTO employeeDTO)
+    {
+        modelMapper.getConfiguration()
+                .setMatchingStrategy(MatchingStrategies.LOOSE);
+        Employee employee = this.modelMapper.map(employeeDTO, Employee.class);
+        Address address = new Address(employee.getEmployeeAddress().getAddress(),
+                employee.getEmployeeAddress().getCity(),
+                employee.getEmployeeAddress().getState(),
+                employee.getEmployeeAddress().getPincode());
+        employee.setActive(true);
+        employee.setEmployeeAddress(address);
+        return employee;
+    }
+    public EmployeeDTO employeeToEmployeeDTO(Employee employee)
+    {
+        modelMapper.getConfiguration()
+                .setMatchingStrategy(MatchingStrategies.LOOSE);
+        EmployeeDTO employeeDTO = this.modelMapper.map(employee, EmployeeDTO.class);
+        return employeeDTO;
     }
 }

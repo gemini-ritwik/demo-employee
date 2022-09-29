@@ -1,6 +1,6 @@
 package com.example.employee.controller;
 
-import com.example.employee.models.Employee;
+import com.example.employee.dto.EmployeeDTO;
 import com.example.employee.services.DepartmentService;
 import com.example.employee.services.EmployeeService;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ public class EmployeeController {
      */
     @GetMapping("/employees")
     public ResponseEntity<Object> getEmployees() throws Exception{
-        List<Employee> employees = employeeService.getEmployees();
+        List<EmployeeDTO> employees = employeeService.getEmployees();
 
         LOGGER.info("GET request for all employees is successful");
         return new ResponseEntity<>(employees, HttpStatus.OK);
@@ -46,7 +46,7 @@ public class EmployeeController {
     @GetMapping("/employees/{employeeId}")
     public ResponseEntity<Object> getEmployee(@PathVariable String employeeId) throws Exception{
         Long id = Long.parseLong(employeeId);
-        Employee employee = employeeService.getEmployee(id);
+        EmployeeDTO employee = employeeService.getEmployee(id);
 
         LOGGER.info("GET request is successful for employee with Id : "+employeeId);
         return new ResponseEntity<Object>(employee, HttpStatus.OK);
@@ -56,14 +56,14 @@ public class EmployeeController {
      * API to create a new employee
      *
      * @param deptId Department id of the department to which the employee belongs to
-     * @param employee Employee details that are to be created
+     * @param employeeDTO Employee details that are to be created
      * @return Success Message
      * @throws Exception when bad request
      */
     @PostMapping("/departments/{deptId}/employees")
-    public ResponseEntity<Object> createEmployee(@PathVariable String deptId, @Valid @RequestBody Employee employee) throws Exception {
+    public ResponseEntity<Object> createEmployee(@PathVariable String deptId, @Valid @RequestBody EmployeeDTO employeeDTO) throws Exception {
         Long id = Long.parseLong(deptId);
-        employeeService.createEmployee(id,employee);
+        employeeService.createEmployee(id,employeeDTO);
 
         LOGGER.info("POST Request for employee is successful");
         return new ResponseEntity<>("Employee details added successfully", HttpStatus.CREATED);
@@ -74,13 +74,13 @@ public class EmployeeController {
      *
      * @param deptId Department id of the department to which the employee exist
      * @param employeeId Employee id of the employee to be updated
-     * @param employee Employee details with which employee is to be updated
+     * @param employeeDTO Employee details with which employee is to be updated
      * @return Success Message
      * @throws Exception when bad request
      */
     @PutMapping("/departments/{deptId}/employees/{employeeId}")
-    public ResponseEntity<Object> updateEmployee(@PathVariable String deptId, @PathVariable String employeeId, @Valid @RequestBody Employee employee) throws Exception{
-        employeeService.updateEmployee(Long.parseLong(deptId), Long.parseLong(employeeId), employee);
+    public ResponseEntity<Object> updateEmployee(@PathVariable String deptId, @PathVariable String employeeId, @Valid @RequestBody EmployeeDTO employeeDTO) throws Exception{
+        employeeService.updateEmployee(Long.parseLong(deptId), Long.parseLong(employeeId), employeeDTO);
 
         LOGGER.info("PUT Request is successful for employee with id : "+employeeId);
         return new ResponseEntity<>("Employee details have been successfully updated", HttpStatus.OK);
@@ -95,7 +95,7 @@ public class EmployeeController {
      */
     @DeleteMapping("/employees/{employeeId}")
     public ResponseEntity<Object> deleteEmployee(@PathVariable String employeeId) throws Exception{
-        Employee employee = employeeService.deleteEmployee(Long.parseLong(employeeId));
+        EmployeeDTO employee = employeeService.deleteEmployee(Long.parseLong(employeeId));
 
         LOGGER.info("DELETE Request is successful for employee with id : "+employeeId);
         return new ResponseEntity<>(employee, HttpStatus.OK);

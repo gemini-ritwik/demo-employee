@@ -68,7 +68,7 @@ public class DepartmentServiceTest {
         assertEquals(3, departmentService.getDepartments().size());
     }
     @Test
-    public void testGetDepartmentThrowsNoDataFoundException() throws Exception {
+    public void testGetDepartmentsThrowsNoDataFoundException() throws Exception {
 
         myDepartments = new ArrayList<>();
 

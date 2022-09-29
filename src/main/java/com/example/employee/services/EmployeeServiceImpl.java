@@ -1,20 +1,25 @@
 package com.example.employee.services;
 
+import com.example.employee.dto.DepartmentDTO;
+import com.example.employee.dto.EmployeeDTO;
 import com.example.employee.exception.DepartmentNotFoundException;
 import com.example.employee.exception.EmployeeNotFoundException;
 import com.example.employee.exception.NoDataFoundException;
+import com.example.employee.models.Address;
 import com.example.employee.models.Department;
 import com.example.employee.models.Employee;
 import com.example.employee.repository.DepartmentRepository;
 import com.example.employee.repository.EmployeeRepository;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService{
@@ -25,19 +30,25 @@ public class EmployeeServiceImpl implements EmployeeService{
     @Autowired
     private DepartmentRepository departmentRepository;
 
+    private final ModelMapper modelMapper=new ModelMapper();
+
     /**
      * Fetches all the employees from the database
-     * @return List<Employee> Returns a list of all the employees
+     * @return List<EmployeeDTO> Returns a list of all the employees
      * @throws Exception Throws exception when there are no employees
      */
     @Override
-    public List<Employee> getEmployees() throws Exception{
+    public List<EmployeeDTO> getEmployees() throws Exception{
         LOGGER.trace("Entering the method getEmployees.");
 
-        List<Employee> employees = employeeRepository.findByIsActiveAndIsDeleted(true,false);
+        List<EmployeeDTO> employees = employeeRepository
+                .findByIsActiveAndIsDeleted(true,false)
+                .stream()
+                .map(this::employeeToEmployeeDTO)
+                .collect(Collectors.toList());
 
         //Check if the list of data is empty
-        if(employees.isEmpty() || employees.size()==0) {
+        if(employees.isEmpty()) {
             LOGGER.error("No data found in the employee table");
             throw new NoDataFoundException("There is no data in the employee table");
         }
@@ -49,11 +60,11 @@ public class EmployeeServiceImpl implements EmployeeService{
     /**
      * Fetches the employee with the given employee id from the database
      * @param employeeId Employee id of the employee to be fetched
-     * @return Employee Returns the employee with the given employee id
+     * @return EmployeeDTO Returns the employee with the given employee id
      * @throws Exception Throws an exception when the employee with the given id does not exist
      */
     @Override
-    public Employee getEmployee(Long employeeId) throws Exception{
+    public EmployeeDTO getEmployee(Long employeeId) throws Exception{
         LOGGER.trace("Entering the method getEmployee");
 
         //getting record from the DB
@@ -71,19 +82,19 @@ public class EmployeeServiceImpl implements EmployeeService{
         }
 
         LOGGER.info("Fetched employee with id : "+employeeId);
-        return employeeFromDb;
+        return employeeToEmployeeDTO(employeeFromDb);
     }
 
     /**
      * Update the details of the employee with given id
      * @param deptId id of the department to which the employee belongs
      * @param employeeId Employee id of the employee to be updated
-     * @param employee employee details of to be updated
-     * @return Employee Returns the updated employee
+     * @param employeeDTO employee details of to be updated
+     * @return EmployeeDTO Returns the updated employee
      * @throws Exception Throws an exception when the employee or department with given ids don't exist
      */
     @Override
-    public Employee updateEmployee(Long deptId, Long employeeId, Employee employee) throws Exception{
+    public EmployeeDTO updateEmployee(Long deptId, Long employeeId, EmployeeDTO employeeDTO) throws Exception{
         LOGGER.trace("Entering the method updateEmployees");
 
         //getting record from the DB
@@ -110,6 +121,9 @@ public class EmployeeServiceImpl implements EmployeeService{
             throw new DepartmentNotFoundException("Department not found with deptId : " + deptId);
         }
 
+        Employee employee = employeeDTOToEmployee(employeeDTO);
+        employee.getEmployeeAddress().setAddressId(employeeFromDb.getEmployeeAddress().getAddressId());
+
         LOGGER.debug("Updating the employee with id : "+employeeId+" from : "+employeeFromDb+" to : "+employee);
         //Updating data
         employeeFromDb.setEmployeeName(employee.getEmployeeName());
@@ -123,19 +137,20 @@ public class EmployeeServiceImpl implements EmployeeService{
         employeeRepository.save(employeeFromDb);
         LOGGER.info("Employee details updated with id : "+employeeId);
 
-        return employeeFromDb;
+        return employeeToEmployeeDTO(employeeFromDb);
     }
 
     /**
      * Save the employee to the database belonging to the specific department
      * @param deptId id of the department to which the employee belongs
-     * @param employee employee to be saved
+     * @param employeeDTO employee to be saved
      * @throws Exception thr/ows an exception when the department with the given id does not exist
      */
     @Override
-    public void createEmployee(Long deptId, Employee employee) throws Exception{
+    public void createEmployee(Long deptId, EmployeeDTO employeeDTO) throws Exception{
         LOGGER.trace("Entering the method createEmployee");
 
+        Employee employee = employeeDTOToEmployee(employeeDTO);
         employee.setActive(true);
         employee.setDeleted(false);
         employee.getEmployeeAddress().setActive(true);
@@ -157,7 +172,7 @@ public class EmployeeServiceImpl implements EmployeeService{
      * @throws Exception throws exception when the employee to be deleted does not exist in the database
      */
     @Override
-    public Employee deleteEmployee(Long employeeId) throws Exception{
+    public EmployeeDTO deleteEmployee(Long employeeId) throws Exception{
         LOGGER.trace("Entering the method deleteEmployee");
 
         //Getting employee from db
@@ -175,7 +190,42 @@ public class EmployeeServiceImpl implements EmployeeService{
         employeeRepository.save(employee);
 
         LOGGER.info("Employee deleted with id : "+employeeId);
-        return employee;
+        return employeeToEmployeeDTO(employee);
     }
 
+
+
+    //Department converter
+    public Department departmentDTOToDepartment(DepartmentDTO departmentDTO)
+    {
+        Department department = this.modelMapper.map(departmentDTO, Department.class);
+        department.setActive(true);
+        return department;
+    }
+    public DepartmentDTO departmentToDepartmentDTO(Department department)
+    {
+        DepartmentDTO departmentDTO = this.modelMapper.map(department, DepartmentDTO.class);
+        return departmentDTO;
+    }
+    //Employee converter
+    public Employee employeeDTOToEmployee(EmployeeDTO employeeDTO)
+    {
+        modelMapper.getConfiguration()
+                .setMatchingStrategy(MatchingStrategies.LOOSE);
+        Employee employee = this.modelMapper.map(employeeDTO, Employee.class);
+        Address address = new Address(employee.getEmployeeAddress().getAddress(),
+                employee.getEmployeeAddress().getCity(),
+                employee.getEmployeeAddress().getState(),
+                employee.getEmployeeAddress().getPincode());
+        employee.setActive(true);
+        employee.setEmployeeAddress(address);
+        return employee;
+    }
+    public EmployeeDTO employeeToEmployeeDTO(Employee employee)
+    {
+        modelMapper.getConfiguration()
+                .setMatchingStrategy(MatchingStrategies.LOOSE);
+        EmployeeDTO employeeDTO = this.modelMapper.map(employee, EmployeeDTO.class);
+        return employeeDTO;
+    }
 }
