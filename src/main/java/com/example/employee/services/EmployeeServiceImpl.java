@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,7 +46,6 @@ public class EmployeeServiceImpl implements EmployeeService{
                 .map(this::employeeToEmployeeDTO)
                 .collect(Collectors.toList());
 
-        //Check if the list of data is empty
         if(employees.isEmpty()) {
             LOGGER.error("No data found in the employee table");
             throw new NoDataFoundException("There is no data in the employee table");
@@ -67,7 +65,6 @@ public class EmployeeServiceImpl implements EmployeeService{
     public EmployeeDTO getEmployee(Long employeeId) throws Exception{
         LOGGER.trace("Entering the method getEmployee");
 
-        //getting record from the DB
         Employee employeeFromDb = employeeRepository.findById(employeeId).orElseThrow(
                 () -> {
                     LOGGER.error("Employee not found with id : "+employeeId);
@@ -75,7 +72,6 @@ public class EmployeeServiceImpl implements EmployeeService{
                 }
         );
 
-        //Check if the record is active and not deleted
         if(!employeeFromDb.isActive() && employeeFromDb.isDeleted()) {
             LOGGER.error("Employee not found with id : "+employeeId);
             throw new EmployeeNotFoundException("Employee not found with id : " + employeeId);
@@ -97,7 +93,6 @@ public class EmployeeServiceImpl implements EmployeeService{
     public EmployeeDTO updateEmployee(Long deptId, Long employeeId, EmployeeDTO employeeDTO) throws Exception{
         LOGGER.trace("Entering the method updateEmployees");
 
-        //getting record from the DB
         Employee employeeFromDb = employeeRepository.findById(employeeId).orElseThrow(
                 () -> {
                     LOGGER.error("Employee not found with id : "+employeeId);
@@ -111,7 +106,6 @@ public class EmployeeServiceImpl implements EmployeeService{
                 }
         );
 
-        //Check if the record is active and not deleted
         if(!employeeFromDb.isActive() && employeeFromDb.isDeleted()) {
             LOGGER.error("Employee not found with id : "+employeeId);
             throw new EmployeeNotFoundException("Employee not found with id : " + employeeId);
@@ -125,7 +119,7 @@ public class EmployeeServiceImpl implements EmployeeService{
         employee.getEmployeeAddress().setAddressId(employeeFromDb.getEmployeeAddress().getAddressId());
 
         LOGGER.debug("Updating the employee with id : "+employeeId+" from : "+employeeFromDb+" to : "+employee);
-        //Updating data
+
         employeeFromDb.setEmployeeName(employee.getEmployeeName());
         employeeFromDb.setEmployeeAddress(employee.getEmployeeAddress());
         employeeFromDb.setEmployeeDesignation(employee.getEmployeeDesignation());
@@ -133,7 +127,6 @@ public class EmployeeServiceImpl implements EmployeeService{
         employeeFromDb.getEmployeeAddress().setActive(true);
         employeeFromDb.setDepartment(departmentFromDb);
 
-        //Saving to the db
         employeeRepository.save(employeeFromDb);
         LOGGER.info("Employee details updated with id : "+employeeId);
 
@@ -180,7 +173,6 @@ public class EmployeeServiceImpl implements EmployeeService{
     public EmployeeDTO deleteEmployee(Long employeeId) throws Exception{
         LOGGER.trace("Entering the method deleteEmployee");
 
-        //Getting employee from db
         Employee employee = employeeRepository.findById(employeeId).orElseThrow(
                 () -> {
                     LOGGER.error("Employee not found with id : "+employeeId);
@@ -200,7 +192,6 @@ public class EmployeeServiceImpl implements EmployeeService{
 
 
 
-    //Department converter
     public Department departmentDTOToDepartment(DepartmentDTO departmentDTO)
     {
         Department department = this.modelMapper.map(departmentDTO, Department.class);
@@ -212,7 +203,6 @@ public class EmployeeServiceImpl implements EmployeeService{
         DepartmentDTO departmentDTO = this.modelMapper.map(department, DepartmentDTO.class);
         return departmentDTO;
     }
-    //Employee converter
     public Employee employeeDTOToEmployee(EmployeeDTO employeeDTO)
     {
         modelMapper.getConfiguration()

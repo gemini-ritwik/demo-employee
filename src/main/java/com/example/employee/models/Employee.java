@@ -1,12 +1,19 @@
 package com.example.employee.models;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "employee")
 public class Employee {
 
@@ -59,10 +66,6 @@ public class Employee {
     )
     private Department department;
 
-
-    public Employee() {
-    }
-
     public Employee(String employeeName, Address employeeAddress, String employeeDesignation, String phoneNumber) {
         this.employeeName = employeeName;
         this.employeeAddress = employeeAddress;
@@ -70,81 +73,6 @@ public class Employee {
         this.phoneNumber = phoneNumber;
         this.isActive = true;
         this.isDeleted = false;
-    }
-
-    public Employee(Long employeeId, String employeeName, Address employeeAddress, String employeeDesignation, String phoneNumber, boolean isActive, boolean isDeleted, Department department) {
-        this.employeeId = employeeId;
-        this.employeeName = employeeName;
-        this.employeeAddress = employeeAddress;
-        this.employeeDesignation = employeeDesignation;
-        this.phoneNumber = phoneNumber;
-        this.isActive = isActive;
-        this.isDeleted = isDeleted;
-        this.department = department;
-    }
-
-    public void setDepartment(Department department) {
-        this.department = department;
-    }
-
-    public void setEmployeeId(Long employeeId) {
-        this.employeeId = employeeId;
-    }
-
-    public void setEmployeeName(String employeeName) {
-        this.employeeName = employeeName;
-    }
-
-    public void setEmployeeAddress(Address employeeAddress) {
-        this.employeeAddress = employeeAddress;
-    }
-
-    public void setEmployeeDesignation(String employeeDesignation) {
-        this.employeeDesignation = employeeDesignation;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-
-    public void setDeleted(boolean deleted) {
-        isDeleted = deleted;
-    }
-
-    public Long getEmployeeId() {
-        return employeeId;
-    }
-
-    public String getEmployeeName() {
-        return employeeName;
-    }
-
-    public Address getEmployeeAddress() {
-        return employeeAddress;
-    }
-
-    public String getEmployeeDesignation() {
-        return employeeDesignation;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public boolean isDeleted() {
-        return isDeleted;
-    }
-
-    public Department getDepartment() {
-        return department;
     }
 
     @Override

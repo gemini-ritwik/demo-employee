@@ -38,7 +38,6 @@ public class DepartmentServiceImpl implements DepartmentService{
                 .map(this::departmentToDepartmentDTO)
                 .collect(Collectors.toList());
 
-        //Check if the list of data is empty
         if (departments.isEmpty() || departments.size() == 0) {
             LOGGER.error("No data found in the department table");
             throw new NoDataFoundException("There is no data in the department table");
@@ -59,7 +58,6 @@ public class DepartmentServiceImpl implements DepartmentService{
         LOGGER.trace("Entering the method getDepartment");
         LOGGER.debug("Fetching department from the database with id : " + deptId);
 
-        //getting record from the DB
         Department departmentFromDb = departmentRepository.findById(deptId).orElseThrow(
                 () -> {
                     LOGGER.error("Department not found with id : "+deptId);
@@ -67,7 +65,6 @@ public class DepartmentServiceImpl implements DepartmentService{
                 }
         );
 
-        //Check if the record is active and not deleted
         if(!departmentFromDb.isActive() && departmentFromDb.isDeleted()) {
             LOGGER.error("Department not found with id : "+deptId);
             throw new DepartmentNotFoundException("Department not found with deptId : "+deptId);
@@ -88,7 +85,6 @@ public class DepartmentServiceImpl implements DepartmentService{
     public DepartmentDTO updateDepartment(Long deptId, DepartmentDTO departmentDTO) throws Exception{
         LOGGER.trace("Entering method updateDepartment");
 
-        //getting record from the DB
         Department departmentFromDb = departmentRepository.findById(deptId).orElseThrow(
                 () -> {
                     LOGGER.error("Department not found with id : "+deptId);
@@ -96,7 +92,6 @@ public class DepartmentServiceImpl implements DepartmentService{
                 }
         );
 
-        //Check if the record is active and not deleted
         if(!departmentFromDb.isActive() && departmentFromDb.isDeleted()) {
             LOGGER.error("Department not found with id : " + deptId);
             throw new DepartmentNotFoundException("Department not found with deptId : " + deptId);
@@ -104,12 +99,10 @@ public class DepartmentServiceImpl implements DepartmentService{
 
         LOGGER.debug("Updating the details of the department with id : "+deptId+" from : "+departmentFromDb +" to : "+departmentDTO.toString());
 
-        //Updating details
         departmentFromDb.setDeptName(departmentDTO.getDeptName());
         departmentFromDb.setDeptDescription(departmentDTO.getDeptDescription());
         departmentFromDb.setUpdatedBy(departmentDTO.getUpdatedBy());
 
-        //Saving to the database
         departmentRepository.save(departmentFromDb);
         LOGGER.info("Details of department updated with id : "+deptId);
 
@@ -143,7 +136,6 @@ public class DepartmentServiceImpl implements DepartmentService{
     public DepartmentDTO deleteDepartment(Long deptId) throws Exception{
         LOGGER.trace("Entering the method deleteDepartment.");
 
-        //Getting department from db
         Department dept = departmentRepository.findById(deptId).orElseThrow(
                 () -> {
                     LOGGER.error("Department not found with id : "+deptId);

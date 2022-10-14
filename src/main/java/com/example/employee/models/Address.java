@@ -1,9 +1,18 @@
 package com.example.employee.models;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 
 @Entity
 @Table(name = "Address")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Address {
 
     @Id
@@ -30,8 +39,6 @@ public class Address {
     @Column
     private boolean isDeleted;
 
-    public Address() {
-    }
 
     public Address(String address, String city, String state, String pincode) {
         this.address = address;
@@ -40,62 +47,6 @@ public class Address {
         this.pincode = pincode;
         this.isActive = true;
         this.isDeleted = false;
-    }
-
-    public Long getAddressId() {
-        return addressId;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public String getPincode() {
-        return pincode;
-    }
-
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public boolean isDeleted() {
-        return isDeleted;
-    }
-
-    public void setAddressId(Long addressId) {
-        this.addressId = addressId;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public void setPincode(String pincode) {
-        this.pincode = pincode;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-
-    public void setDeleted(boolean deleted) {
-        isDeleted = deleted;
     }
 
     @Override
