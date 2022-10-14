@@ -71,6 +71,17 @@ public class Department {
         this.isDeleted = false;
     }
 
+    public Department(Long deptId, String deptName, String deptDescription, int createdBy, int updatedBy, boolean isActive, boolean isDeleted, Set<Employee> employees) {
+        this.deptId = deptId;
+        this.deptName = deptName;
+        this.deptDescription = deptDescription;
+        this.createdBy = createdBy;
+        this.updatedBy = updatedBy;
+        this.isActive = isActive;
+        this.isDeleted = isDeleted;
+        this.employees = employees;
+    }
+
     @Override
     public String toString() {
         return "Department{" +
